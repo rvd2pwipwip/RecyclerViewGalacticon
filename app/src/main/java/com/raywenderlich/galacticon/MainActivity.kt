@@ -25,6 +25,7 @@ package com.raywenderlich.galacticon
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.IOException
@@ -39,6 +40,28 @@ class MainActivity : AppCompatActivity(), ImageRequester.ImageRequesterResponse 
 
   private var photosList: ArrayList<Photo> = ArrayList()
   private lateinit var imageRequester: ImageRequester
+
+
+  ///////// Scroll Support /////////
+  //find last visible item position for scroll support
+  private val lastVisibleItemPosition: Int
+    get() = linearLayoutManager.findLastVisibleItemPosition()
+
+  //insert an onScrollListener to RecyclerView, so it can get a callback when the user scrolls
+  private fun setRecyclerViewScrollListener() {
+    recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+      override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+        super.onScrollStateChanged(recyclerView, newState)
+        val totalItemCount = recyclerView.layoutManager!!.itemCount
+        if (!imageRequester.isLoadingData && totalItemCount == lastVisibleItemPosition + 1) {
+          requestPhoto()
+        }
+      }
+    })
+  }
+
+  ///////// Scroll Support /////////
+
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
     menuInflater.inflate(R.menu.menu_main, menu)
@@ -58,6 +81,7 @@ class MainActivity : AppCompatActivity(), ImageRequester.ImageRequesterResponse 
     adapter = RecyclerAdapter(photosList)
     recyclerView.adapter = adapter
 
+    setRecyclerViewScrollListener()
 
     imageRequester = ImageRequester(this)
   }
@@ -88,3 +112,5 @@ class MainActivity : AppCompatActivity(), ImageRequester.ImageRequesterResponse 
     }
   }
 }
+
+

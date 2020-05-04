@@ -32,8 +32,11 @@ import java.util.*
 
 class MainActivity : AppCompatActivity(), ImageRequester.ImageRequesterResponse {
 
+  private lateinit var adapter: RecyclerAdapter
+
   //add linear layout manager property
   private lateinit var linearLayoutManager: LinearLayoutManager
+
   private var photosList: ArrayList<Photo> = ArrayList()
   private lateinit var imageRequester: ImageRequester
 
@@ -51,11 +54,21 @@ class MainActivity : AppCompatActivity(), ImageRequester.ImageRequesterResponse 
     //and assign it the linear layout manager
     recyclerView.layoutManager = linearLayoutManager
 
+    //connect the recycler view to the adapter
+    adapter = RecyclerAdapter(photosList)
+    recyclerView.adapter = adapter
+
+
     imageRequester = ImageRequester(this)
   }
 
   override fun onStart() {
     super.onStart()
+
+    if (photosList.size == 0) {
+      requestPhoto()
+    }
+
   }
 
   private fun requestPhoto() {
@@ -70,6 +83,8 @@ class MainActivity : AppCompatActivity(), ImageRequester.ImageRequesterResponse 
   override fun receivedNewPhoto(newPhoto: Photo) {
     runOnUiThread {
       photosList.add(newPhoto)
+      //inform the recycler adapter that you added an item after updating the list of photos
+      adapter.notifyItemInserted(photosList.size-1)
     }
   }
 }
